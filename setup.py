@@ -9,7 +9,9 @@ setup(
     author='Jason Michalski',
     author_email='armooo@armooo.net',
     py_modules=['suds_requests'],
-    install_requires=['requests', 'suds'],
+    install_requires=['requests',
+                      'suds;python_version<"3.0"',
+                      'suds-jurko;python_version>="3.0"',],
     license='MIT',
     url='https://github.com/armooo/suds_requests',
 )
