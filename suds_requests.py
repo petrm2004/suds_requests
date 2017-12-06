@@ -1,12 +1,16 @@
+from six import PY2, PY3
 import functools
 import requests
 import suds.transport as transport
 import traceback
 
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
+if PY2:
+    try:
+        from cStringIO import StringIO as IO
+    except ImportError:
+        from StringIO import StringIO as IO
+elif PY3:
+    from io import BytesIO as IO
 
 
 __all__ = ['RequestsTransport']
@@ -18,14 +22,14 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except requests.HTTPError as e:
-            buf = StringIO.StringIO(e.response.content)
+            buf = IO(e.response.content)
             raise transport.TransportError(
                 'Error in requests\n' + traceback.format_exc(),
                 e.response.status_code,
                 buf,
             )
         except requests.RequestException:
-            buf = StringIO.StringIO(traceback.format_exc())
+            buf = IO(traceback.format_exc())
             raise transport.TransportError(
                 'Error in requests\n' + traceback.format_exc(),
                 000,
@@ -43,7 +47,7 @@ class RequestsTransport(transport.Transport):
     def open(self, request):
         resp = self._session.get(request.url)
         resp.raise_for_status()
-        return StringIO.StringIO(resp.content)
+        return IO(resp.content)
 
     @handle_errors
     def send(self, request):
